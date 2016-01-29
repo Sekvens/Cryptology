@@ -17,8 +17,8 @@ def validateString(inputString):
 
 #Lowercase and removes non alphabet characters
 def formatString(inputString):
-    inputString.lower()
-    return validateString(inputString)
+    #inputString.lower()
+    return validateString(inputString.lower())
 
 #Takes a filenName as a string and returns the contents as a string.
 def getFileAsString(fileName):
@@ -28,4 +28,4 @@ def getFileAsString(fileName):
     
 #The input for the encryption algorithm.	
 def getStringForEncryption(fileName):
-	return formatString(getFileAsString)
+	return formatString(getFileAsString(fileName))
