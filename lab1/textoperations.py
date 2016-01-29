@@ -22,7 +22,7 @@ def formatString(inputString):
 
 #Takes a filenName as a string and returns the contents as a string.
 def getFileAsString(fileName):
-    with open(fileName, 'r') as fileObject:
+    with open(fileName, 'r', encoding='utf-8') as fileObject:
         data = fileObject.read()
     return data
     
