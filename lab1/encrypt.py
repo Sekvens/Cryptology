@@ -21,16 +21,19 @@ print("Filename given is: " + nonSafeFileName)
 def encrypt2(plaintext):
     plaintextIndex = 0
     keyLength = len(key)
+    encryptedText = ""
     if(keyLength == 0):
         return "Key missing"
     for char in plaintext:
         #calculate what key character to use and look up the number in the alphabet
         keyInteger = Alphabet.index(key[plaintextIndex % keyLength+1])
-        #Fetching the current char's integer representative
-        plainTextInteger = Alphabet.index[char]
+        #Fetching the current char's integer 
+        plainTextInteger = Alphabet.find(char)
         plaintextIndex += 1
-        encryptedChar = Alphabet[(plainTextInteger + keyInteger) % Alphabet]
-        encryptedText += encryptedChar
+        print(plainTextInteger)
+        print(keyInteger)
+        encryptedChar = Alphabet[(plainTextInteger + keyInteger) % len(Alphabet)]
+        encryptedText = encryptedText + encryptedChar
     return encryptedText
 
 if(plainText != ""):
