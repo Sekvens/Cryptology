@@ -14,7 +14,10 @@ encryptedText = ""
 
 print("Filename given is: " + nonSafeFileName)
 
-if(plaintext != ""):
-	plaintext = textoperations.getStringForEncryption(fileName)
+def encrypt(plaintext):
 	for char in plaintext:
 		
+
+if(plaintext != ""):
+	plaintext = textoperations.getStringForEncryption(fileName)
+	print encrypt(plaintext)
