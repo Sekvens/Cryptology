@@ -1,5 +1,9 @@
 Alphabet = "abcdefghijklmnopqrstuvwxyzåäö ,."
 
+#Returns the alphabet used.
+def getAlphabet():
+	return Alphabet
+
 #This function formats the text by removing chacters not in the alphabet
 def validateString(inputString):
     inputString = list(inputString)
