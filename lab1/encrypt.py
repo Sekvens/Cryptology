@@ -26,7 +26,7 @@ def encrypt2(plaintext):
         return "Key missing"
     for char in plaintext:
         #calculate what key character to use and look up the number in the alphabet
-        keyInteger = Alphabet.index(key[plaintextIndex % keyLength+1])
+        keyInteger = Alphabet.index(key[plaintextIndex % keyLength])
         #Fetching the current char's integer 
         plainTextInteger = Alphabet.find(char)
         plaintextIndex += 1
