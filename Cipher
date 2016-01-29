@@ -1,0 +1,77 @@
+/* Main Class, display on cmd console.   */
+
+using System.Threading.Tasks;
+using System.IO;
+using System.Security.Cryptography;
+
+
+namespace group18
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Please enter a password to use:");
+            string password = Console.ReadLine();
+            Console.WriteLine("Please enter a string to encrypt:");
+            string plaintext = Console.ReadLine();
+            Console.WriteLine("");
+
+            Console.WriteLine("Your encrypted string is:");
+            string encryptedstring = StringCipher.Encrypt(plaintext, password);
+            Console.WriteLine(encryptedstring);
+            Console.WriteLine("");
+            Console.ReadKey();
+        }
+    }
+
+
+}
+
+
+
+/*  Class StringCipher which is used for encryption  */
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using System.Security.Cryptography;
+
+namespace group18
+{
+    class StringCipher
+    {
+        
+        public static string Encrypt(string plaintext, string password )
+         {
+           
+
+            if(plaintext == null )
+              {
+                throw new ArgumentNullException("plaintext");
+              }
+
+            if (password == null)
+            {
+                throw new ArgumentNullException("password");
+            }
+
+            StringBuilder builder = new StringBuilder(plaintext);
+            StringBuilder creater = new StringBuilder(password);
+
+            for(int i = 1; i < builder.Length; i++)
+            {
+
+                // builder[i] = (char)(builder[i] + creater[i % (creater.Length)]);
+                builder[i] = (char)(builder[i] -32 );   //I still confuse about how to use C# to deal Swedish charactors
+            }
+
+            return builder.ToString();
+            
+
+        
+         }
+    }
+}
