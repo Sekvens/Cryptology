@@ -1,3 +1,4 @@
+import os
 Alphabet = "abcdefghijklmnopqrstuvwxyzåäö ,."
 
 #Returns the alphabet used.
@@ -27,5 +28,14 @@ def getFileAsString(fileName):
     return data
     
 #The input for the encryption algorithm.	
-def getStringForEncryption(fileName):
+def getFormattedStringFromFile(fileName):
 	return formatString(getFileAsString(fileName))
+    
+#Write string to file
+def printOutputToFile(fileName, stringToPrint):
+    if(os.path.exists(fileName)):
+        with open(fileName, 'w', encoding='utf-8') as outputFile:
+            outputFile.write(stringToPrint)
+        print("File written successfully")
+    else:
+        print("Output file not found.")
