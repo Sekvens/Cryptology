@@ -16,12 +16,12 @@ def frequencyCounter(inputText, frequencyTable):
     This function is not safe! The string have to follow the standard of the lab."""
     if(len(frequencyTable)==0):
         frequencyTable = getEmptyFrequencySet()
-        for char in inputText:
-            charNr = alphabet.find(char)
-            frequencyTable[charNr][1] += 1
+    for char in inputText:
+        charNr = alphabet.find(char)
+        frequencyTable[charNr][1] += 1
     return frequencyTable
     
-def translateFrequencyToPercentage(frequencyTable):
+def transformFTable(frequencyTable):
     sum = 0
     for charContrainer in frequencyTable:
         sum = sum + charContrainer[1]
@@ -31,13 +31,18 @@ def translateFrequencyToPercentage(frequencyTable):
     
 def getFrequencyFromFile(fileName, frequencyTable):
     inputString = textoperations.getFormattedStringFromFile(fileName)
+    print("Working with file: \n" + fileName + " File length: " + str(len(inputString)))
     tempTable = frequencyCounter(inputString, frequencyTable)
     return tempTable
     
 def getFrequencyFromFolder(folderPath, frequencyTable):
+    ftable = frequencyTable
+    fCounter = 0
     for fileName in os.listdir(folderPath):
-        frequencyTable = getFrequencyFromFile(fileName, frequencyTable)
-    return frequencyTable
+        ftable = getFrequencyFromFile(folderPath + os.sep + fileName, ftable)
+        fCounter += 1
+    print("Collected Frequency from " + str(fCounter) + " files")
+    return ftable
     
 def getCurrentPath():
     return os.path.dirname(os.path.realpath(__file__))
