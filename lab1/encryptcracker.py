@@ -1,4 +1,5 @@
 import textoperations
+import os
 
 alphabet = textoperations.getAlphabet()
 
@@ -15,10 +16,31 @@ def frequencyCounter(inputText, frequencyTable):
     This function is not safe! The string have to follow the standard of the lab."""
     if(len(frequencyTable)==0):
         frequencyTable = getEmptyFrequencySet()
-    for char in inputText:
-        charNr = alphabet.find(char)
-        frequencyTable[charNr][1] += 1
+        for char in inputText:
+            charNr = alphabet.find(char)
+            frequencyTable[charNr][1] += 1
     return frequencyTable
+    
+def translateFrequencyToPercentage(frequencyTable):
+    sum = 0
+    for charContrainer in frequencyTable:
+        sum = sum + charContrainer[1]
+    for charContrainer in frequencyTable:
+        charContrainer[1] = round((charContrainer[1] / sum), 3)
+    return frequencyTable
+    
+def getFrequencyFromFile(fileName, frequencyTable):
+    inputString = textoperations.getFormattedStringFromFile(fileName)
+    tempTable = frequencyCounter(inputString, frequencyTable)
+    return tempTable
+    
+def getFrequencyFromFolder(folderPath, frequencyTable):
+    for fileName in os.listdir(folderPath):
+        frequencyTable = getFrequencyFromFile(fileName, frequencyTable)
+    return frequencyTable
+    
+def getCurrentPath():
+    return os.path.dirname(os.path.realpath(__file__))
     
 def getIndexOfCoincidence(cipherText):
     """
@@ -46,7 +68,7 @@ def getAlphabetICRandom(alph):
     return 1/len(alph)
     
 def getLanguageFrequency():
-    print("todo")
+    print("todo later")
     
 def friedmanTest(encryptedText):
     alphabetLength = len(textoperations.getAlphabet())

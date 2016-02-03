@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import textoperations
 import sys
 import os
