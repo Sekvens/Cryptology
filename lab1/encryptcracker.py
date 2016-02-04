@@ -50,14 +50,16 @@ def getCurrentPath():
 def getIndexOfCoincidence(cipherText):
     """
     This calculates K_o or what's called IC(x^j). 
+    @return: A fTable.
     """
-    N = len(cipherTextSubset)
-    cipherCharFrequency = frequencyCounter(cipherText, [])
+    N = len(cipherText)
+    cipherFTable = frequencyCounter(cipherText, [])
     for i in range(len(alphabet)):
         #Occurence of character i
-        fxj = cipherCharFrequency[i][1]
+        fxj = cipherFTable[i][1]
         #Replace occurence with ic(char_i)
-        cipherCharFrequency[i][1] = (fxj*(fxj-1))/(N*(N-1))
+        cipherFTable[i][1] = (fxj*(fxj-1))/(N*(N-1))
+    return cipherFTable
     
 def getAverageIndexOfCoincidence(icTable):
     """This is the likleyhood that two random elements are identical. It's an average of all index of coincidence for a string."""
