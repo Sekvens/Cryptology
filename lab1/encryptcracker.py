@@ -1,5 +1,6 @@
 import textoperations
 import os
+import math
 
 alphabet = textoperations.getAlphabet()
 
@@ -47,12 +48,12 @@ def getFrequencyFromFolder(folderPath, frequencyTable):
 def getCurrentPath():
     return os.path.dirname(os.path.realpath(__file__))
     
-def getIndexOfCoincidence(cipherText):
+def getIndexOfCoincidence(cipherText, mPrime):
     """
     This calculates K_o or what's called IC(x^j). 
     @return: A fTable.
     """
-    N = len(cipherText)
+    N = math.floor(len(cipherText) / mPrime)
     cipherFTable = frequencyCounter(cipherText, [])
     for i in range(len(alphabet)):
         #Occurence of character i
@@ -61,17 +62,15 @@ def getIndexOfCoincidence(cipherText):
         cipherFTable[i][1] = (fxj*(fxj-1))/(N*(N-1))
     return cipherFTable
     
-def getAverageIndexOfCoincidence(icTable):
+def getAverageIndexOfCoincidence(icTable, mPrime):
     """This is the likleyhood that two random elements are identical. It's an average of all index of coincidence for a string."""
-    i = 0
     sum = 0
     for tuple in icTable:
         sum += tuple[1]
-        i += 1
-    return ((1/i) * sum)
+    return ((1/mPrime) * sum)
     
-#Lowest IC for the alphabet. Complete randomness.
-def getAlphabetICRandom(alph):
+#Lowest probability for the alphabet. Complete randomness.
+def getAlphabetRandom(alph):
     return 1/len(alph)
     
 def getLanguageFrequency():

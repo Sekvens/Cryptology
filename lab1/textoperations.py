@@ -3,9 +3,9 @@
 import os
 import re
 Alphabet = "abcdefghijklmnopqrstuvwxyzåäö ,."
-TAG_RE = re.compile(r'<[^>]+>|\d.')
-SPACE_RE = re.compile(" +")
-NR_RE = re.compile("\d.")
+TAG_RE = re.compile(r'<[^>]+>|\d\.')
+SPACE_RE = re.compile(r'[ ][ ]+') #(" +")
+NR_RE = re.compile("\d\.")
 
 #Returns the alphabet used.
 def getAlphabet():
@@ -28,11 +28,11 @@ def specialFormattingBible(inputString):
     for row in inputString.split('\n'):
         row = remove_crap(row)
         cleanString = cleanString + row
-    return row
+    return cleanString
     
 #This function formats the text by removing chacters not in the alphabet
 def validateString(inputString):
-    #inputString = specialFormattingBible(inputString)
+    inputString = specialFormattingBible(inputString)
     inputString = list(inputString)
     returnString = ""
     for char in inputString:
