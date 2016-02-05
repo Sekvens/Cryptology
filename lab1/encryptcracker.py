@@ -22,12 +22,13 @@ def frequencyCounter(inputText, frequencyTable):
         frequencyTable[charNr][1] += 1
     return frequencyTable
     
+#Transforms the values into percentage!
 def transformFTable(frequencyTable):
     sum = 0
     for charContrainer in frequencyTable:
         sum = sum + charContrainer[1]
     for charContrainer in frequencyTable:
-        charContrainer[1] = round((charContrainer[1] / sum), 3)
+        charContrainer[1] = round((charContrainer[1]*100 / sum), 3)
     return frequencyTable
     
 def getFrequencyFromFile(fileName, frequencyTable):
@@ -45,6 +46,7 @@ def getFrequencyFromFolder(folderPath, frequencyTable):
     print("Collected Frequency from " + str(fCounter) + " files")
     return ftable
     
+#Helper for debug
 def getCurrentPath():
     return os.path.dirname(os.path.realpath(__file__))
     
@@ -53,25 +55,68 @@ def getIndexOfCoincidence(cipherText, mPrime):
     This calculates K_o or what's called IC(x^j). 
     @return: A fTable.
     """
-    N = math.floor(len(cipherText) / mPrime)
-    cipherFTable = frequencyCounter(cipherText, [])
-    for i in range(len(alphabet)):
-        #Occurence of character i
-        fxj = cipherFTable[i][1]
-        #Replace occurence with ic(char_i)
-        cipherFTable[i][1] = (fxj*(fxj-1))/(N*(N-1))
-    return cipherFTable
+    N = math.ceil(len(cipherText) / mPrime)
+    subCipherList = [cipherText[i:i+N] for i in range(0, len(cipherText),N)]
+    totalSum = []
+    for subString in subCipherList:
+        cipherFTable = frequencyCounter(subString, [])
+        counter = 0
+        sum = 0
+        for i in cipherFTable:
+            #Occurence of character i
+            fxj = cipherFTable[counter][1]
+            #Replace occurence with ic(char_i)
+            #cipherFTable[i][1] = (fxj*(fxj-1))/(N*(N-1))
+            sum += (fxj*(fxj-1))/(N*(N-1))
+            counter += 1
+        totalSum.append(sum)
+    returnSum = 0
+    for subSum in totalSum:
+        returnSum += subSum
+    return returnSum / mPrime
     
-def getAverageIndexOfCoincidence(icTable, mPrime):
-    """This is the likleyhood that two random elements are identical. It's an average of all index of coincidence for a string."""
+def debugTest(nr):
+    cipherText = textoperations.getFileAsString("test.txt")
+    for i in range(nr):
+        print("IC for cipherText with mPrime:" + str(i+1))
+        print(getIndexOfCoincidence(cipherText, i+1))
+    
+def getICTableAlphabet(fileName):
+    """Reads a file where every row have the letter and occurence as a percentage seperated by |"""
+    alphF = textoperations.getFileAsString(fileName).split('\n')
+    i = 0
+    for dataString in alphF:
+        dataString = dataString.split('|')
+        f = 0.0
+        f = float(dataString[1])
+        alphF[i] = [dataString[0], f]
+        i += 1
+    return alphF
+    
+def debugGetAlphIC():
+    return getICTableAlphabet("sweletterfrequency.txt")
+    
+# def getAverageIndexOfCoincidence(icTable, mPrime):#mPrime):
+    # """This is the likleyhood that two random elements are identical. It's an average of all index of coincidence for a string."""
+    # sum = 0
+    # for tuple in icTable: #mPrime?
+        # sum += tuple[1]
+    # return ((1/len(icTable)) * sum)
+    
+#Can be used to calculate IC for a language
+def pTwoRandom(pList):
     sum = 0
-    for tuple in icTable:
-        sum += tuple[1]
-    return ((1/mPrime) * sum)
+    for probability in pList:
+        sum += (probability * probability)
+    return sum
     
-#Lowest probability for the alphabet. Complete randomness.
+#Lowest probability for the alphabet. Complete randomness. The proabilty of a coincidence for a uniform random selection from the alphabet.
 def getAlphabetRandom(alph):
-    return 1/len(alph)
+    n = len(alph)
+    sum = 0
+    for i in range(n):
+        sum = sum + (1/n)*(1/n)
+    return sum
     
 def getLanguageFrequency():
     print("todo later")
