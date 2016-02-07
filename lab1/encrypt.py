@@ -33,9 +33,12 @@ def vigenereCipher(inputString, keyString, encrypt):
         inputInteger = Alphabet.find(char)
         inputIndex += 1
         if(encrypt):
+            #outCharIndex = (inputInteger + keyInteger)
             outChar = Alphabet[(inputInteger + keyInteger) % len(Alphabet)]
         else:
+            #outCharIndex = (inputInteger - keyInteger)
             outChar = Alphabet[(inputInteger - keyInteger) % len(Alphabet)]
+        #outChar = Alphabet[outCharIndex % len(Alphabet)]
         outText = outText + outChar
     return outText
 
@@ -47,7 +50,10 @@ def decrypt(encryptedText, key):
     
 def doCrypt(inFile, keyFile, outFile, encryptB):
     if(os.path.exists(inFile) and os.path.exists(keyFile)):
-        inString = textoperations.getFormattedStringFromFile(inFile)
+        if(encryptB):
+            inString = textoperations.getFormattedStringFromFile(inFile)
+        else:
+            inString = textoperations.getFileAsString(inFile)
         keyString = textoperations.getFormattedStringFromFile(keyFile)
         outString = ""
         if(encryptB):
