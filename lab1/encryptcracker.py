@@ -53,33 +53,47 @@ def getCurrentPath():
 def getIndexOfCoincidence(cipherText, mPrime):
     """
     This calculates K_o or what's called IC(x^j). 
-    @return: A fTable.
+    @return: 
     """
     N = math.ceil(len(cipherText) / mPrime)
-    subCipherList = [cipherText[i:i+N] for i in range(0, len(cipherText),N)]
-    totalSum = []
+    #subCipherList = [cipherText[i:i+N] for i in range(0, len(cipherText),N)] #x^
+    subCipherList = []
+    for i in range(mPrime): #Create a list with N empty strings
+        subCipherList.append("")
+    index = 0
+    for char in cipherText:
+        subCipherList[index % mPrime] += char
+        index += 1
+    subSum = []
     for subString in subCipherList:
-        cipherFTable = frequencyCounter(subString, [])
-        counter = 0
-        sum = 0
+        cipherFTable = frequencyCounter(subString, []) #list[char_i][f_i(x^j)]
+        counter = 0 #Avoids a python error
+        avgSum = 0
         for i in cipherFTable:
             #Occurence of character i
             fxj = cipherFTable[counter][1]
             #Replace occurence with ic(char_i)
             #cipherFTable[i][1] = (fxj*(fxj-1))/(N*(N-1))
-            sum += (fxj*(fxj-1))/(N*(N-1))
+            #sum += (fxj*(fxj-1))/(len(subString)*(len(subString)-1))
+            avgSum += (fxj*(fxj-1))
             counter += 1
-        totalSum.append(sum)
+        subSum.append(avgSum * (1/((len(subString)*(len(subString)-1)))))
     returnSum = 0
-    for subSum in totalSum:
-        returnSum += subSum
+    for term in subSum:
+        returnSum += term
     return returnSum / mPrime
     
-def debugTest(nr):
-    cipherText = textoperations.getFileAsString("test.txt")
-    for i in range(nr):
-        print("IC for cipherText with mPrime:" + str(i+1))
-        print(getIndexOfCoincidence(cipherText, i+1))
+def debugTest(start, stop, fileName):
+    cipherText = textoperations.getFileAsString(fileName)
+    answers = []
+    for i in range(start, stop):
+        print(i)
+        answers.append([i, 0])
+    for i in range(start, stop):
+        print("IC for cipherText with mPrime: " + str(i))
+        answers[i-start][1] = getIndexOfCoincidence(cipherText, i)
+        print(i-start)
+    return answers
     
 def getICTableAlphabet(fileName):
     """Reads a file where every row have the letter and occurence as a percentage seperated by |"""
@@ -96,19 +110,19 @@ def getICTableAlphabet(fileName):
 def debugGetAlphIC():
     return getICTableAlphabet("sweletterfrequency.txt")
     
-# def getAverageIndexOfCoincidence(icTable, mPrime):#mPrime):
-    # """This is the likleyhood that two random elements are identical. It's an average of all index of coincidence for a string."""
-    # sum = 0
-    # for tuple in icTable: #mPrime?
-        # sum += tuple[1]
-    # return ((1/len(icTable)) * sum)
-    
 #Can be used to calculate IC for a language
 def pTwoRandom(pList):
     sum = 0
     for probability in pList:
         sum += (probability * probability)
     return sum
+    
+#Helper for debug, should give the IC for swedish.
+def getSweProb():
+    pList = []
+    for element in debugGetAlphIC():
+        pList.append(element[1])
+    return pTwoRandom(pList)
     
 #Lowest probability for the alphabet. Complete randomness. The proabilty of a coincidence for a uniform random selection from the alphabet.
 def getAlphabetRandom(alph):
@@ -117,10 +131,10 @@ def getAlphabetRandom(alph):
     for i in range(n):
         sum = sum + (1/n)*(1/n)
     return sum
-    
-def getLanguageFrequency():
-    print("todo later")
+
+#Lowest probability, totally uniform for our language.
+def getSweRandom():
+    return getAlphabetRandom(textoperations.getAlphabet())
     
 def friedmanTest(encryptedText):
     alphabetLength = len(textoperations.getAlphabet())
-    probability_char
