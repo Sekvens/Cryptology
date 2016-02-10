@@ -50,13 +50,8 @@ def getFrequencyFromFolder(folderPath, frequencyTable):
 def getCurrentPath():
     return os.path.dirname(os.path.realpath(__file__))
     
-def getIndexOfCoincidence(cipherText, mPrime):
-    """
-    This calculates K_o or what's called IC(x^j). 
-    @return: 
-    """
-    N = math.ceil(len(cipherText) / mPrime)
-    #subCipherList = [cipherText[i:i+N] for i in range(0, len(cipherText),N)] #x^
+#Helpfunction for refactorisation.
+def getSubCipherList(cipherText, mPrime):
     subCipherList = []
     for i in range(mPrime): #Create a list with N empty strings
         subCipherList.append("")
@@ -64,17 +59,27 @@ def getIndexOfCoincidence(cipherText, mPrime):
     for char in cipherText:
         subCipherList[index % mPrime] += char
         index += 1
+    return subCipherList
+    
+def getIndexOfCoincidence(cipherText, mPrime):
+    """
+    Does not support keys of size less than 3. Return the IC for the key size mPrime Calculates index of coincidence for a key of length mPrime for the given ciphertext.
+    @mPrime: Possible key length.
+    @cipherText: The encrypted text.
+    @return: IC_mprime(cipherText)
+    """
+    N = math.ceil(len(cipherText) / mPrime)
+    #subCipherList = [cipherText[i:i+N] for i in range(0, len(cipherText),N)] #x^
+    subCipherList = getSubCipherList(cipherText, mPrime)
     subSum = []
     for subString in subCipherList:
         cipherFTable = frequencyCounter(subString, []) #list[char_i][f_i(x^j)]
-        counter = 0 #Avoids a python error
+        counter = 0 #Avoids a python type error
         avgSum = 0
         for i in cipherFTable:
             #Occurence of character i
             fxj = cipherFTable[counter][1]
             #Replace occurence with ic(char_i)
-            #cipherFTable[i][1] = (fxj*(fxj-1))/(N*(N-1))
-            #sum += (fxj*(fxj-1))/(len(subString)*(len(subString)-1))
             avgSum += (fxj*(fxj-1))
             counter += 1
         subSum.append(avgSum * (1/((len(subString)*(len(subString)-1)))))
@@ -83,16 +88,25 @@ def getIndexOfCoincidence(cipherText, mPrime):
         returnSum += term
     return returnSum / mPrime
     
-def debugTest(start, stop, fileName):
+def getICforKeyLengths(start, stop, fileName):
     cipherText = textoperations.getFileAsString(fileName)
     answers = []
-    for i in range(start, stop):
-        print(i)
+    for i in range(start, stop+1):
         answers.append([i, 0])
-    for i in range(start, stop):
-        print("IC for cipherText with mPrime: " + str(i))
+    for i in range(start, stop+1):
         answers[i-start][1] = getIndexOfCoincidence(cipherText, i)
-        print(i-start)
+    maximum = 0.0
+    maxKey = 0
+    sKey = 0
+    sMax = 0.0
+    for keyIC in answers:
+        if(keyIC[1]>maximum):
+            sKey = maxKey
+            sMax = maximum
+            maximum = keyIC[1]
+            maxKey = keyIC[0]
+    print("Maximum IC found is: ", maximum, " for key of length ", maxKey)
+    print("Second largest pair is (", sKey, ", ", sMax, ")")
     return answers
     
 def getICTableAlphabet(fileName):
