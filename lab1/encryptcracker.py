@@ -86,7 +86,7 @@ def getIndexOfCoincidence(cipherText, mPrime):
     returnSum = 0
     for term in subSum:
         returnSum += term
-    return returnSum / mPrime
+    return returnSum / mPrime        
     
 def getICforKeyLengths(start, stop, fileName):
     cipherText = textoperations.getFileAsString(fileName)
@@ -109,7 +109,7 @@ def getICforKeyLengths(start, stop, fileName):
     print("Second largest pair is (", sKey, ", ", sMax, ")")
     return answers
     
-def getICTableAlphabet(fileName):
+def getPTableAlphabet(fileName):
     """Reads a file where every row have the letter and occurence as a percentage seperated by |"""
     alphF = textoperations.getFileAsString(fileName).split('\n')
     i = 0
@@ -121,8 +121,8 @@ def getICTableAlphabet(fileName):
         i += 1
     return alphF
     
-def debugGetAlphIC():
-    return getICTableAlphabet("sweletterfrequency.txt")
+def debugGetAlphP():
+    return getPTableAlphabet("sweletterfrequency.txt")
     
 #Can be used to calculate IC for a language
 def pTwoRandom(pList):
@@ -134,11 +134,55 @@ def pTwoRandom(pList):
 #Helper for debug, should give the IC for swedish.
 def getSweProb():
     pList = []
-    for element in debugGetAlphIC():
+    for element in debugGetAlphP():
         pList.append(element[1])
     return pTwoRandom(pList)
     
-#Lowest probability for the alphabet. Complete randomness. The proabilty of a coincidence for a uniform random selection from the alphabet.
+def getChiSquared(nrOfChar, expectedNrOfChar):
+    """Get the chi square for one letter"""
+    return ((nrOfChar - expectedNrOfChar)(nrOfChar - expectedNrOfChar))/expectedNrOfChar
+
+def getChiSquaredStatistics(charOccurenceList, expectedCharOccurenceList):
+    """If two statistical distributions are identical the chi square statistic is 0. The higher number the more they differ.
+    @return: Chi-Squared Statistic
+    @charOccurenceList: A list with the number of occurences of every character.
+    @expectedCharOccurenceList: A list with expected occurences of every character. Ordered in the same way as charOccurenceList.
+    """
+    sum = 0
+    counter = 0
+    for element in charOccurenceList:
+        sum += getChiSquared(element, expectedCharOccurenceList[counter])
+        counter += 1
+    return sum
+    
+def getExpectedCharOccurence(cipherTextLength, alphabetProbabilityTable):
+    """
+    @cipherTextLength: The length of the cipher text subset we are analysing.
+    @return: A frequency count table with the likley number of every character for the language in a text of the cipher text length. The frequency is measured as floats in this table."""
+    expectedCharOccurence = []
+    occ = 0.0
+    for characterProbability in alphabetProbabilityTable:
+        occ = characterProbability * cipherTextLength
+        expectedCharOccurence = [characterProbability[0], occ]
+    return expectedCharOccurence
+    
+def getCandidateKeyCharacters(cipherText, alphabetProbabilityTable, mPrime):
+    """This metod will return most likley characters to be key in a ciphertext for a known key length
+    @mPrime: Known keylength
+    @cipherText: The encrypted text
+    @alphabetProbabilityTable: A table showing the probability for characters in the alphabet used.
+    """
+    subCipherList = getSubCipherList(cipherText, mPrime)
+    subFrequencyCount = []
+    for subCipher in subCipherList:
+        subFrequencyCount.append(frequencyCounter(cipherText, []))
+    #Brutefoce commerce
+    return (subFrequencyCount)
+    
+def test():
+    return getCandidateKeyCharacters(textoperations.getFileAsString("duan.encrypt"), getPTableAlphabet("sweletterfrequency.txt"), 11)
+    
+#Lowest probability for the alphabet. Complete randomness. The probabilty of a coincidence for a uniform random selection from the alphabet.
 def getAlphabetRandom(alph):
     n = len(alph)
     sum = 0
