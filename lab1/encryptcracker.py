@@ -1,4 +1,4 @@
-import textoperations
+import textoperations, encrypt
 import os
 import math
 
@@ -140,10 +140,10 @@ def getSweProb():
     
 def getChiSquared(nrOfChar, expectedNrOfChar):
     """Get the chi square for one letter"""
-    return ((nrOfChar - expectedNrOfChar)(nrOfChar - expectedNrOfChar))/expectedNrOfChar
+    return ((nrOfChar - expectedNrOfChar)*(nrOfChar - expectedNrOfChar))/expectedNrOfChar
 
 def getChiSquaredStatistics(charOccurenceList, expectedCharOccurenceList):
-    """If two statistical distributions are identical the chi square statistic is 0. The higher number the more they differ.
+    """If two statistical distributions are identical the chi square statistic is 0. The higher number the more they differ. Theta(|charOccurenceList|)
     @return: Chi-Squared Statistic
     @charOccurenceList: A list with the number of occurences of every character.
     @expectedCharOccurenceList: A list with expected occurences of every character. Ordered in the same way as charOccurenceList.
@@ -158,15 +158,21 @@ def getChiSquaredStatistics(charOccurenceList, expectedCharOccurenceList):
 def getExpectedCharOccurence(cipherTextLength, alphabetProbabilityTable):
     """
     @cipherTextLength: The length of the cipher text subset we are analysing.
-    @return: A frequency count table with the likley number of every character for the language in a text of the cipher text length. The frequency is measured as floats in this table."""
+    @return: A frequency COUNT table with the likley number of every character for the language in a text of the cipher text length. The frequency is measured as FLOATs in this table."""
     expectedCharOccurence = []
     occ = 0.0
     for characterProbability in alphabetProbabilityTable:
-        occ = characterProbability * cipherTextLength
-        expectedCharOccurence = [characterProbability[0], occ]
+        occ = characterProbability[1] * cipherTextLength
+        expectedCharOccurence.append(occ)
     return expectedCharOccurence
     
-def getCandidateKeyCharacters(cipherText, alphabetProbabilityTable, mPrime):
+def stripCharsFromTable(fTable):
+    temp = []
+    for el in fTable:
+        temp.append(el[1])
+    return temp
+    
+def getKeyChiSquaredStatistics(cipherText, alphabetProbabilityTable, mPrime):
     """This metod will return most likley characters to be key in a ciphertext for a known key length
     @mPrime: Known keylength
     @cipherText: The encrypted text
@@ -176,11 +182,55 @@ def getCandidateKeyCharacters(cipherText, alphabetProbabilityTable, mPrime):
     subFrequencyCount = []
     for subCipher in subCipherList:
         subFrequencyCount.append(frequencyCounter(cipherText, []))
-    #Brutefoce commerce
-    return (subFrequencyCount)
+    subCipherCounter = 0
+    sCipherLength = len(subCipherList[0])
+    alphPTable = debugGetAlphP() #Save alphPTable to reduce IO.
+    expCharOccurence = getExpectedCharOccurence(sCipherLength, alphPTable)
+    answer = [] #[keyNrCharacter, chiList]
+    #Brutefoce starting
+    for subCipher in subCipherList:
+        chiList = [] #Contains all chi values for this keyCharacter/subCipher
+        if(len(subCipher) != sCipherLength):#Only recalculate expectedCharOccurence if subCipher text length differs.
+            sCipherLength = len(subCipher)
+            expCharOccurence = getExpectedCharOccurence(sCipherLength, alphPTable)
+        for i in range(len(alphabet)): #Time-complexity in loop: O(|plainText|+|alphabet|+(|alphabet|*|subCipherText|))
+            plainTextCandidateI = encrypt.ceasarCipher(subCipher, i, False)
+            chiList.append(getChiSquaredStatistics(stripCharsFromTable(frequencyCounter(plainTextCandidateI, [])), expCharOccurence))
+        answer.append([subCipherCounter, chiList])
+        subCipherCounter += 1
+    return answer
+    
+def getNMinMax(aList, n, maxFlag):
+    maxList = []
+    mini = 0
+    for elem in aList:
+        if(maxFlag):
+            if(elem > mini):
+                if len(maxList) >= n:
+                    maxList.pop(0)
+                maxList.append(elem)
+                maxList.sort()
+                mini = maxList[0]
+        else:
+            if(elem < mini): #Logic is reversed, mini is actually max and vise versa.
+                if len(maxList) >= n:
+                    maxList.pop()
+                maxList.append(elem)
+                maxList.sort()
+                mini = maxList[-1]
+            elif(len(maxList) < n): #Handling short lists/empty list
+                maxList.append(elem)
+                maxList.sort()
+                mini = maxList[-1]
+    return maxList
     
 def test():
-    return getCandidateKeyCharacters(textoperations.getFileAsString("duan.encrypt"), getPTableAlphabet("sweletterfrequency.txt"), 11)
+    chiList = getKeyChiSquaredStatistics(textoperations.getFileAsString("duan.encrypt"), getPTableAlphabet("sweletterfrequency.txt"), 11)
+    for key in chiList:
+        print("Key for index: ", key[0])
+        temp = getNMinMax(key[1], 3, False)
+        print("Likley keys:", temp)
+        print("Corresponds to the character:", alphabet[key[1].index(temp[0])])
     
 #Lowest probability for the alphabet. Complete randomness. The probabilty of a coincidence for a uniform random selection from the alphabet.
 def getAlphabetRandom(alph):

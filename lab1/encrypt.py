@@ -33,15 +33,25 @@ def vigenereCipher(inputString, keyString, encrypt):
         inputInteger = Alphabet.find(char)
         inputIndex += 1
         if(encrypt):
-            #outCharIndex = (inputInteger + keyInteger)
             outChar = Alphabet[(inputInteger + keyInteger) % len(Alphabet)]
         else:
-            #outCharIndex = (inputInteger - keyInteger)
             outChar = Alphabet[(inputInteger - keyInteger) % len(Alphabet)]
-        #outChar = Alphabet[outCharIndex % len(Alphabet)]
         outText = outText + outChar
     return outText
-
+    
+def ceasarCipher(inputText, keyInteger, encrypt):
+    """Simple ceasar cipher encrypter/decrypter. Used for cracking vigenere ciphers.
+    @keyInteger: An integer representing a character in a alphabet that is the key for this particular text.
+    @inputText: The cipher text or plainText to encrypt/decrypt."""
+    outText = ""
+    for char in inputText:
+        inputInteger = Alphabet.find(char)
+        if(encrypt):
+            outText += Alphabet[(inputInteger + keyInteger) % len(Alphabet)]
+        else:
+            outText += Alphabet[(inputInteger - keyInteger) % len(Alphabet)]
+    return outText
+    
 def encrypt(plaintext, key):
     return vigenereCipher(plaintext, key, True)
 
