@@ -230,7 +230,7 @@ def test():
         print("Key for index: ", key[0])
         temp = getNMinMax(key[1], 3, False)
         print("Likley keys:", temp)
-        print("Corresponds to the character:", alphabet[key[1].index(temp[0])])
+        print("Corresponds to the character:", alphabet[key[1].index(temp[1])])
     
 #Lowest probability for the alphabet. Complete randomness. The probabilty of a coincidence for a uniform random selection from the alphabet.
 def getAlphabetRandom(alph):
@@ -244,5 +244,77 @@ def getAlphabetRandom(alph):
 def getSweRandom():
     return getAlphabetRandom(textoperations.getAlphabet())
     
-def friedmanTest(encryptedText):
-    alphabetLength = len(textoperations.getAlphabet())
+def friedmanTest(encryptedTextFile, minKey, maxKey):
+    """Performs a Friedman test on the encrypted contents in a file for keylengths between minKey and maxKey.
+    @encryptedTextFile: A file containing the encrypted string in UTF-8 format.
+    @minKey: The minimum keylength to test.
+    @maxKey: The Maximum key length to test
+    @return: A list of Index of Coincidence for every keylength indexed after the keylength where index 0 corresponds to minKey and then step up one for every index occurence up to maxKey."""
+    cipherText = textoperations.getFileAsString(encryptedTextFile)
+    answers = []
+    if(minKey > 0 and maxKey > minKey):
+        for i in range(minKey, maxKey+1):
+            answers.append(getIndexOfCoincidence(cipherText, i))
+    return answers
+    
+def getKeyCharCandidates(cipherFile, frequencyFile, keyLength, nrOfCandidates):
+    """Calculates possible keys
+    @cipherFile: The file containing the cipher
+    @frequencyFile: A file containing the letter frequency of the alphabet.
+    @keyLength: The length of the key.
+    @nrOfCandidates: The number of top candidate key caracters for every key possition.
+    @return: A list with index position as first element and a list of the top candidate characters in the second element. """
+    chiList = getKeyChiSquaredStatistics(textoperations.getFileAsString(cipherFile), getPTableAlphabet(frequencyFile), keyLength)
+    for keyChar in chiList:
+        top = getNMinMax(keyChar[1], nrOfCandidates, False)
+        topAlph = []
+        for key in top:
+            topAlph.append(alphabet[keyChar[1].index(key)])
+        keyChar[1] = topAlph
+    return chiList
+    
+def analysisFreidmanNorm(fileName, maxKey):
+    possibleKeyLengths = friedmanTest(fileName, 1, maxKey)
+    maxP = getSweProb()
+    minP = getSweRandom()
+    counter = 1
+    for IC in possibleKeyLengths:
+        print("Key-length: ", counter, " likleyhood: " , round(((IC - minP) / (maxP - minP) * 100), 2), "%")
+        counter += 1
+    
+def getKeyInFile(fileName, maxKey, nrOfKeys, nrOfCandidateSolutions):
+    start = 1
+    frequencyTable = "sweletterfrequency.txt"
+    possibleKeyLength = friedmanTest(fileName, start, maxKey)
+    topKeyCandidates = getNMinMax(possibleKeyLength, nrOfKeys, True)
+    topKeys = []
+    for keyNr in range(nrOfKeys):
+        keyLength = possibleKeyLength.index(topKeyCandidates[nrOfKeys-1-keyNr])+start
+        topKeys.append(keyLength)
+    #for keyLength in topKeys:
+    solutionsForKey = []
+    for key in topKeys:
+        temp = []
+        temp.append(key)
+        temp.append(getKeyCharCandidates(fileName, frequencyTable, key, nrOfCandidateSolutions))
+        solutionsForKey.append(temp)
+    return solutionsForKey
+    
+def prettySolutionPrinter(solutionsForKeys, fileName):
+    print("***Presenting solutions for file: ", fileName, "***")
+    for keyLengthSolution in solutionsForKeys:
+        print("   Candidate length of Key:", keyLengthSolution[0])
+        topRow = "   "
+        CandidateSolution = []
+        for i in keyLengthSolution[1][1]:
+            CandidateSolution.append("")
+        for charSolutions in keyLengthSolution[1]:
+            topRow += (str)(charSolutions[0])
+        word = ""
+        for charSolutions in keyLengthSolution[1]:
+            for i in range(len(keyLengthSolution[1][1][1])):
+                CandidateSolution[i] += (str)(charSolutions[1])
+        print(topRow)
+        for solution in CandidateSolution:
+            print("    ", solution)
+            

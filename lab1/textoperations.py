@@ -63,3 +63,9 @@ def printOutputToFile(fileName, stringToPrint):
         print("File written successfully")
     else:
         print("Output file not found.")
+        
+def getFilesInFolder(folderPath):
+    fileList = []
+    for file in os.listdir(folderPath):
+        fileList.append(folderPath + os.sep + fileName)
+    return fileList
