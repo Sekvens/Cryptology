@@ -66,6 +66,6 @@ def printOutputToFile(fileName, stringToPrint):
         
 def getFilesInFolder(folderPath):
     fileList = []
-    for file in os.listdir(folderPath):
+    for fileName in os.listdir(folderPath):
         fileList.append(folderPath + os.sep + fileName)
     return fileList

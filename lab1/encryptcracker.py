@@ -1,6 +1,7 @@
 import textoperations, encrypt
 import os
 import math
+import time
 
 alphabet = textoperations.getAlphabet()
 
@@ -300,21 +301,36 @@ def getKeyInFile(fileName, maxKey, nrOfKeys, nrOfCandidateSolutions):
         solutionsForKey.append(temp)
     return solutionsForKey
     
+#Transforms the output from getKeyInFile to something readable for humans and prints in output.
 def prettySolutionPrinter(solutionsForKeys, fileName):
     print("***Presenting solutions for file: ", fileName, "***")
     for keyLengthSolution in solutionsForKeys:
-        print("   Candidate length of Key:", keyLengthSolution[0])
-        topRow = "   "
+        print("   Presenting candidate keys of length", keyLengthSolution[0])
+        topRow = "pos:   "
         CandidateSolution = []
-        for i in keyLengthSolution[1][1]:
+        for i in keyLengthSolution[1][1][1]:
             CandidateSolution.append("")
         for charSolutions in keyLengthSolution[1]:
             topRow += (str)(charSolutions[0])
         word = ""
         for charSolutions in keyLengthSolution[1]:
             for i in range(len(keyLengthSolution[1][1][1])):
-                CandidateSolution[i] += (str)(charSolutions[1])
-        print(topRow)
-        for solution in CandidateSolution:
-            print("    ", solution)
-            
+                CandidateSolution[i] += (str)(charSolutions[1][i])
+        #print(topRow)
+        for can in CandidateSolution:
+            print("      ", can)
+
+def multicrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
+    for file in textoperations.getFilesInFolder(filePath):
+        start_time = time.time()
+        prettySolutionPrinter(getKeyInFile(file, maxKey, nrOfKeys, nrOfCandidateSolutions), file)
+        print("--- %s seconds ---" % (time.time() - start_time))
+        
+#Assumes files to aggregate are named text something.
+def aggregatecrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
+    cFiles = []
+    for file in textoperations.getFilesInFolder(filePath):
+        print(file[-12:-8])
+        if(file[-12:-8] == "text"):
+            cFiles.append(file)
+    print(cFiles)
