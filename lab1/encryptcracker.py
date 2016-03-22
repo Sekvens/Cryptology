@@ -69,7 +69,7 @@ def getIndexOfCoincidence(cipherText, mPrime):
     @cipherText: The encrypted text.
     @return: IC_mprime(cipherText)
     """
-    N = math.ceil(len(cipherText) / mPrime)
+    #N = math.ceil(len(cipherText) / mPrime)
     #subCipherList = [cipherText[i:i+N] for i in range(0, len(cipherText),N)] #x^
     subCipherList = getSubCipherList(cipherText, mPrime)
     subSum = []
@@ -83,7 +83,7 @@ def getIndexOfCoincidence(cipherText, mPrime):
             #Replace occurence with ic(char_i)
             avgSum += (fxj*(fxj-1))
             counter += 1
-        subSum.append(avgSum * (1/((len(subString)*(len(subString)-1)))))
+        subSum.append(avgSum * (1/((len(subString)*(len(subString)-1))))) #Does not work if modulo equals one! Division by zero
     returnSum = 0
     for term in subSum:
         returnSum += term
@@ -327,10 +327,18 @@ def multicrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
         print("--- %s seconds ---" % (time.time() - start_time))
         
 #Assumes files to aggregate are named text something.
-def aggregatecrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
+def aggregateTAFilescrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
     cFiles = []
     for file in textoperations.getFilesInFolder(filePath):
         print(file[-12:-8])
         if(file[-12:-8] == "text"):
             cFiles.append(file)
     print(cFiles)
+    cipherStrings = []
+    for fileName in cFiles:
+        cipherStrings.append(textoperations.getFileAsString(fileName))
+    print("text1: ", cipherStrings[0])
+    print("text2: ", cipherStrings[1])
+    print("text3: ", cipherStrings[2])
+    print("text4: ", cipherStrings[3])
+    
