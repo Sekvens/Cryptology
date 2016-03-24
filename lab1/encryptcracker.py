@@ -2,6 +2,10 @@ import textoperations, encrypt
 import os
 import math
 import time
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 alphabet = textoperations.getAlphabet()
 
@@ -83,7 +87,8 @@ def getIndexOfCoincidence(cipherText, mPrime):
             #Replace occurence with ic(char_i)
             avgSum += (fxj*(fxj-1))
             counter += 1
-        subSum.append(avgSum * (1/((len(subString)*(len(subString)-1))))) #Does not work if modulo equals one! Division by zero
+        if(len(subString) != 0):
+            subSum.append(avgSum * (1/((len(subString)*(len(subString)-1))))) #Does not work if modulo equals one! Division by zero
     returnSum = 0
     for term in subSum:
         returnSum += term
@@ -245,18 +250,21 @@ def getAlphabetRandom(alph):
 def getSweRandom():
     return getAlphabetRandom(textoperations.getAlphabet())
     
-def friedmanTest(encryptedTextFile, minKey, maxKey):
+def friedmanTest_(encryptedText, minKey, maxKey):
     """Performs a Friedman test on the encrypted contents in a file for keylengths between minKey and maxKey.
-    @encryptedTextFile: A file containing the encrypted string in UTF-8 format.
+    @encryptedText: A file containing the encrypted string in UTF-8 format. If file is not found it will be interpred as a String input containing the cipher text.
     @minKey: The minimum keylength to test.
     @maxKey: The Maximum key length to test
     @return: A list of Index of Coincidence for every keylength indexed after the keylength where index 0 corresponds to minKey and then step up one for every index occurence up to maxKey."""
-    cipherText = textoperations.getFileAsString(encryptedTextFile)
+    cipherText = encryptedText
     answers = []
     if(minKey > 0 and maxKey > minKey):
         for i in range(minKey, maxKey+1):
             answers.append(getIndexOfCoincidence(cipherText, i))
     return answers
+    
+def freidmanTest(encryptedTextFile, minKey, maxKey):
+    return freidmanTest_(textoperations.getFileAsString(encryptedTextFile), minKey, maxKey)
     
 def getKeyCharCandidates(cipherFile, frequencyFile, keyLength, nrOfCandidates):
     """Calculates possible keys
@@ -274,11 +282,11 @@ def getKeyCharCandidates(cipherFile, frequencyFile, keyLength, nrOfCandidates):
         keyChar[1] = topAlph
     return chiList
     
-def analysisFreidmanNorm(fileName, maxKey):
-    possibleKeyLengths = friedmanTest(fileName, 1, maxKey)
+def analysisFreidmanNorm(cipher, maxKey):
+    possibleKeyLengths = friedmanTest_(cipher, 4, maxKey)
     maxP = getSweProb()
     minP = getSweRandom()
-    counter = 1
+    counter = 4
     for IC in possibleKeyLengths:
         print("Key-length: ", counter, " likleyhood: " , round(((IC - minP) / (maxP - minP) * 100), 2), "%")
         counter += 1
@@ -333,7 +341,6 @@ def aggregateTAFilescrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
         print(file[-12:-8])
         if(file[-12:-8] == "text"):
             cFiles.append(file)
-    print(cFiles)
     cipherStrings = []
     for fileName in cFiles:
         cipherStrings.append(textoperations.getFileAsString(fileName))
@@ -341,4 +348,11 @@ def aggregateTAFilescrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
     print("text2: ", cipherStrings[1])
     print("text3: ", cipherStrings[2])
     print("text4: ", cipherStrings[3])
-    
+    print("Text1 length:", len(cipherStrings[0]))
+    print("Text2 length:", len(cipherStrings[1]))
+    print("Text3 length:", len(cipherStrings[2]))
+    print("Text4 length:", len(cipherStrings[3]))
+    newFile = cipherStrings[3][0:500] + cipherStrings[0][0:500] + cipherStrings[1][0:500] + cipherStrings[2][0:500]
+    output = StringIO()
+    print("sending: ", newFile)
+    analysisFreidmanNorm(newFile, 150)
