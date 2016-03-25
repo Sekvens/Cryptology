@@ -266,14 +266,14 @@ def friedmanTest_(encryptedText, minKey, maxKey):
 def freidmanTest(encryptedTextFile, minKey, maxKey):
     return freidmanTest_(textoperations.getFileAsString(encryptedTextFile), minKey, maxKey)
     
-def getKeyCharCandidates(cipherFile, frequencyFile, keyLength, nrOfCandidates):
+def getKeyCharCandidates_(cipherText, frequencyFile, keyLength, nrOfCandidates):
     """Calculates possible keys
-    @cipherFile: The file containing the cipher
+    @cipherText: The text containing the cipher
     @frequencyFile: A file containing the letter frequency of the alphabet.
     @keyLength: The length of the key.
     @nrOfCandidates: The number of top candidate key caracters for every key possition.
     @return: A list with index position as first element and a list of the top candidate characters in the second element. """
-    chiList = getKeyChiSquaredStatistics(textoperations.getFileAsString(cipherFile), getPTableAlphabet(frequencyFile), keyLength)
+    chiList = getKeyChiSquaredStatistics(cipherText, getPTableAlphabet(frequencyFile), keyLength)
     for keyChar in chiList:
         top = getNMinMax(keyChar[1], nrOfCandidates, False)
         topAlph = []
@@ -281,6 +281,9 @@ def getKeyCharCandidates(cipherFile, frequencyFile, keyLength, nrOfCandidates):
             topAlph.append(alphabet[keyChar[1].index(key)])
         keyChar[1] = topAlph
     return chiList
+    
+def getKeyCharCandidates(cipherFile, frequencyFile, keyLength, nrOfCandidates):
+    return getKeyCharCandidates_(textoperations.getFileAsString(cipherFile), frequencyFile, keyLength, nrOfCandidates)
     
 def analysisFreidmanNorm(cipher, maxKey):
     possibleKeyLengths = friedmanTest_(cipher, 4, maxKey)
@@ -307,6 +310,15 @@ def getKeyInFile(fileName, maxKey, nrOfKeys, nrOfCandidateSolutions):
         temp.append(key)
         temp.append(getKeyCharCandidates(fileName, frequencyTable, key, nrOfCandidateSolutions))
         solutionsForKey.append(temp)
+    return solutionsForKey
+    
+def showCandidateKey(cipherText, KeyLength, nrOfCand):
+    frequencyTable = "sweletterfrequency.txt"
+    solutionsForKey = []
+    temp = []
+    temp.append(KeyLength)
+    temp.append(getKeyCharCandidates(cipherText, frequencyTable, KeyLength, nrOfCand))
+    solutionsForKey.append(temp)
     return solutionsForKey
     
 #Transforms the output from getKeyInFile to something readable for humans and prints in output.
@@ -352,7 +364,9 @@ def aggregateTAFilescrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
     print("Text2 length:", len(cipherStrings[1]))
     print("Text3 length:", len(cipherStrings[2]))
     print("Text4 length:", len(cipherStrings[3]))
-    newFile = cipherStrings[3][0:500] + cipherStrings[0][0:500] + cipherStrings[1][0:500] + cipherStrings[2][0:500]
+    i = 850
+    newFile = cipherStrings[3][0:i] + cipherStrings[0][0:i] + cipherStrings[1][0:i] + cipherStrings[2][0:i]
     output = StringIO()
     print("sending: ", newFile)
-    analysisFreidmanNorm(newFile, 150)
+    #analysisFreidmanNorm(newFile, 180)
+    showCandidateKey(newFile, 50, 2)
