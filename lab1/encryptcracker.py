@@ -87,7 +87,7 @@ def getIndexOfCoincidence(cipherText, mPrime):
             #Replace occurence with ic(char_i)
             avgSum += (fxj*(fxj-1))
             counter += 1
-        if(len(subString) != 0):
+        if(len(subString) != 0 or len(subString) != 1):
             subSum.append(avgSum * (1/((len(subString)*(len(subString)-1))))) #Does not work if modulo equals one! Division by zero
     returnSum = 0
     for term in subSum:
@@ -317,7 +317,7 @@ def showCandidateKey(cipherText, KeyLength, nrOfCand):
     solutionsForKey = []
     temp = []
     temp.append(KeyLength)
-    temp.append(getKeyCharCandidates(cipherText, frequencyTable, KeyLength, nrOfCand))
+    temp.append(getKeyCharCandidates_(cipherText, frequencyTable, KeyLength, nrOfCand))
     solutionsForKey.append(temp)
     return solutionsForKey
     
@@ -346,8 +346,21 @@ def multicrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
         prettySolutionPrinter(getKeyInFile(file, maxKey, nrOfKeys, nrOfCandidateSolutions), file)
         print("--- %s seconds ---" % (time.time() - start_time))
         
+#Specialized function for reading a candidate key solution and getting the IC for the most likley key.
+def getICForKey(keyData):
+    keyLength = keyData[0][0]
+    key = ""
+    for characters in keyData[0][1]:
+        key += characters[1][0]
+    probabilityTable = []
+    iC = 0
+    for charFreq in frequencyCounter(key, []):
+        #iC += (charFreq[1]/len(alphabet))**2
+        iC += (charFreq[1]/keyLength)**2
+    return [key, iC]
+    
 #Assumes files to aggregate are named text something.
-def aggregateTAFilescrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
+def aggregateTAFilescrack(filePath, maxKey, nrOfSolutions):
     cFiles = []
     for file in textoperations.getFilesInFolder(filePath):
         print(file[-12:-8])
@@ -364,9 +377,14 @@ def aggregateTAFilescrack(filePath, maxKey, nrOfKeys, nrOfCandidateSolutions):
     print("Text2 length:", len(cipherStrings[1]))
     print("Text3 length:", len(cipherStrings[2]))
     print("Text4 length:", len(cipherStrings[3]))
-    i = 850
-    newFile = cipherStrings[3][0:i] + cipherStrings[0][0:i] + cipherStrings[1][0:i] + cipherStrings[2][0:i]
+    i = 250
+    newFile = cipherStrings[3][0:i] + cipherStrings[2][0:i] + cipherStrings[1][0:i] + cipherStrings[0][0:i]
+    #newFile = cipherStrings[0] + cipherStrings[1] + cipherStrings[2] + cipherStrings[3]
     output = StringIO()
     print("sending: ", newFile)
     #analysisFreidmanNorm(newFile, 180)
-    showCandidateKey(newFile, 50, 2)
+    #prettySolutionPrinter(showCandidateKey(newFile, keyLength, nrOfSolutions), "Testrun")
+    for keyLength in range(4,maxKey):
+        temp = getICForKey(showCandidateKey(newFile, keyLength, nrOfSolutions))
+        print("KeyLength:", keyLength, " IC: ", temp[1])
+        print("KEY: ", temp[0])
