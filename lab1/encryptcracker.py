@@ -359,32 +359,47 @@ def getICForKey(keyData):
         iC += (charFreq[1]/keyLength)**2
     return [key, iC]
     
+def getLanugageIC():
+    alphPTable = debugGetAlphP()
+    lanIC = 0
+    for char in alphPTable:
+        lanIC += (char[1])**2
+    return lanIC
+    
 #Assumes files to aggregate are named text something.
 def aggregateTAFilescrack(filePath, maxKey, nrOfSolutions):
     cFiles = []
     for file in textoperations.getFilesInFolder(filePath):
-        print(file[-12:-8])
+        #print(file[-12:-8])
         if(file[-12:-8] == "text"):
             cFiles.append(file)
     cipherStrings = []
     for fileName in cFiles:
         cipherStrings.append(textoperations.getFileAsString(fileName))
-    print("text1: ", cipherStrings[0])
-    print("text2: ", cipherStrings[1])
-    print("text3: ", cipherStrings[2])
-    print("text4: ", cipherStrings[3])
-    print("Text1 length:", len(cipherStrings[0]))
-    print("Text2 length:", len(cipherStrings[1]))
-    print("Text3 length:", len(cipherStrings[2]))
-    print("Text4 length:", len(cipherStrings[3]))
-    i = 250
-    newFile = cipherStrings[3][0:i] + cipherStrings[2][0:i] + cipherStrings[1][0:i] + cipherStrings[0][0:i]
-    #newFile = cipherStrings[0] + cipherStrings[1] + cipherStrings[2] + cipherStrings[3]
+    #print("text1: ", cipherStrings[0])
+    #print("text2: ", cipherStrings[1])
+    #print("text3: ", cipherStrings[2])
+    #print("text4: ", cipherStrings[3])
+    #print("Text1 length:", len(cipherStrings[0]))
+    #print("Text2 length:", len(cipherStrings[1]))
+    #print("Text3 length:", len(cipherStrings[2]))
+    #print("Text4 length:", len(cipherStrings[3]))
+    i = 115
+    #newFile = cipherStrings[0][0:i] + cipherStrings[1][0:i] + cipherStrings[2][0:i] + cipherStrings[3][0:i]
+    newFile = cipherStrings[0] + cipherStrings[1] + cipherStrings[2] + cipherStrings[3]
     output = StringIO()
     print("sending: ", newFile)
+    print("lanIC", getLanugageIC())
     #analysisFreidmanNorm(newFile, 180)
     #prettySolutionPrinter(showCandidateKey(newFile, keyLength, nrOfSolutions), "Testrun")
+    lanIC = getLanugageIC()
+    niceKeys = []
     for keyLength in range(4,maxKey):
         temp = getICForKey(showCandidateKey(newFile, keyLength, nrOfSolutions))
-        print("KeyLength:", keyLength, " IC: ", temp[1])
+        similarityToLang = (temp[1]/lanIC)-1
+        if(similarityToLang < 0.1 and similarityToLang > -0.1):
+            niceKeys.append([keyLength, temp[0], temp[1]])
+        print("KeyLength:", keyLength, " ICdifference: ", similarityToLang)
         print("KEY: ", temp[0])
+    print(niceKeys)
+    #print("Last one:", showCandidateKey(newFile, 49, 3)[0][1])
