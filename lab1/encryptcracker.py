@@ -291,8 +291,10 @@ def analysisFreidmanNorm(cipher, maxKey):
     minP = getSweRandom()
     counter = 4
     for IC in possibleKeyLengths:
-        print("Key-length: ", counter, " likleyhood: " , round(((IC - minP) / (maxP - minP) * 100), 2), "%")
+        print("Key-length: ", counter, " IC: ", IC, " percent of Swedish: |" , round((IC / maxP), 2), "%|") #-maxP) / (maxP - minP) * 100), 2), "%|")
         counter += 1
+    maxIC = max(possibleKeyLengths)
+    print("Key: ", possibleKeyLengths.index(maxIC)+4, " Highest IC: ", maxIC)  
     
 def getKeyInFile(fileName, maxKey, nrOfKeys, nrOfCandidateSolutions):
     start = 1
@@ -366,28 +368,36 @@ def getLanugageIC():
         lanIC += (char[1])**2
     return lanIC
     
-#Assumes files to aggregate are named text something.
-def aggregateTAFilescrack(filePath, maxKey, nrOfSolutions):
+def aggregateTAFiles(filePath, takeFirstInt):
+    """Finds the cipher text files in a folder that contain the TA:s texts. Looks only if the filename have "Text" in them.
+    @takeFirstInt: Only read the first X characters in each file for an aggregated output. If set to 0 all the text in the files will be sent to the output.
+    @output: A string containing the takeFirstInt characters in the cipher texts from the TA:s.
+    """
     cFiles = []
     for file in textoperations.getFilesInFolder(filePath):
-        #print(file[-12:-8])
         if(file[-12:-8] == "text"):
             cFiles.append(file)
     cipherStrings = []
     for fileName in cFiles:
         cipherStrings.append(textoperations.getFileAsString(fileName))
-    #print("text1: ", cipherStrings[0])
-    #print("text2: ", cipherStrings[1])
-    #print("text3: ", cipherStrings[2])
-    #print("text4: ", cipherStrings[3])
-    #print("Text1 length:", len(cipherStrings[0]))
-    #print("Text2 length:", len(cipherStrings[1]))
-    #print("Text3 length:", len(cipherStrings[2]))
-    #print("Text4 length:", len(cipherStrings[3]))
-    i = 115
-    #newFile = cipherStrings[0][0:i] + cipherStrings[1][0:i] + cipherStrings[2][0:i] + cipherStrings[3][0:i]
-    newFile = cipherStrings[0] + cipherStrings[1] + cipherStrings[2] + cipherStrings[3]
-    output = StringIO()
+    if(takeFirstInt == 0):
+        newFile = cipherStrings[0] + cipherStrings[1] + cipherStrings[2] + cipherStrings[3]
+    else:
+        newFile = cipherStrings[0][0:takeFirstInt] + cipherStrings[1][0:takeFirstInt] + cipherStrings[2][0:takeFirstInt] + cipherStrings[3][0:takeFirstInt]
+    return newFile
+    
+def TAfriedmanAnalysis(filePath, maxKeySize, takeFirstInt):
+    """Performs friedman test on all key sizes up to maxKeySize on the TAs cipherTexts and prints how much the index of coincidence differs from Swedish."""
+    newFile = aggregateTAFiles(filePath, takeFirstInt)
+    analysisFreidmanNorm(newFile, maxKeySize)
+
+def TAgetSpecificKey(filePath, keyLength, nrOfSolutions, takeFirstInt):
+    newFile = aggregateTAFiles(filePath, takeFirstInt)
+    prettySolutionPrinter(showCandidateKey(newFile, keyLength, nrOfSolutions), "TA test")
+    
+#Assumes files to aggregate are named text something.
+def aggregateTAFilescrack(filePath, maxKey, nrOfSolutions, takeFirstInt):
+    newFile = aggregateTAFiles(filePath, takeFirstInt)
     print("sending: ", newFile)
     print("lanIC", getLanugageIC())
     #analysisFreidmanNorm(newFile, 180)
