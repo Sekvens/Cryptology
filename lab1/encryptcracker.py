@@ -264,7 +264,7 @@ def friedmanTest_(encryptedText, minKey, maxKey):
     return answers
     
 def freidmanTest(encryptedTextFile, minKey, maxKey):
-    return freidmanTest_(textoperations.getFileAsString(encryptedTextFile), minKey, maxKey)
+    return friedmanTest_(textoperations.getFileAsString(encryptedTextFile), minKey, maxKey)
     
 def getKeyCharCandidates_(cipherText, frequencyFile, keyLength, nrOfCandidates):
     """Calculates possible keys
@@ -299,7 +299,7 @@ def analysisFreidmanNorm(cipher, maxKey):
 def getKeyInFile(fileName, maxKey, nrOfKeys, nrOfCandidateSolutions):
     start = 1
     frequencyTable = "sweletterfrequency.txt"
-    possibleKeyLength = friedmanTest(fileName, start, maxKey)
+    possibleKeyLength = freidmanTest(fileName, start, maxKey)
     topKeyCandidates = getNMinMax(possibleKeyLength, nrOfKeys, True)
     topKeys = []
     for keyNr in range(nrOfKeys):
@@ -368,11 +368,7 @@ def getLanugageIC():
         lanIC += (char[1])**2
     return lanIC
     
-def aggregateTAFiles(filePath, takeFirstInt):
-    """Finds the cipher text files in a folder that contain the TA:s texts. Looks only if the filename have "Text" in them.
-    @takeFirstInt: Only read the first X characters in each file for an aggregated output. If set to 0 all the text in the files will be sent to the output.
-    @output: A string containing the takeFirstInt characters in the cipher texts from the TA:s.
-    """
+def getTAfileStringsList(filePath):
     cFiles = []
     for file in textoperations.getFilesInFolder(filePath):
         if(file[-12:-8] == "text"):
@@ -380,10 +376,38 @@ def aggregateTAFiles(filePath, takeFirstInt):
     cipherStrings = []
     for fileName in cFiles:
         cipherStrings.append(textoperations.getFileAsString(fileName))
-    if(takeFirstInt == 0):
-        newFile = cipherStrings[0] + cipherStrings[1] + cipherStrings[2] + cipherStrings[3]
-    else:
-        newFile = cipherStrings[0][0:takeFirstInt] + cipherStrings[1][0:takeFirstInt] + cipherStrings[2][0:takeFirstInt] + cipherStrings[3][0:takeFirstInt]
+    return cipherStrings
+    
+def aggregateTAFiles(filePath, takeFirstInt):
+    """Finds the cipher text files in a folder that contain the TA:s texts. Looks only if the filename have "Text" in them.
+    @takeFirstInt: Only read the first X characters in each file for an aggregated output. If set to 0 all the text in the files will be sent to the output.
+    @output: A string containing the takeFirstInt characters in the cipher texts from the TA:s.
+    """
+    cipherStrings = getTAfileStringsList(filePath)
+    newFile = ""
+    for cipherString in cipherStrings:
+        if(takeFirstInt == 0):
+            newFile += cipherString
+        else:
+            newFile += cipherString[0:takeFirstInt]
+    return newFile
+    
+def gcd(a,b):
+    while b: a, b = b, a%b
+    return a    
+    
+def smartTAAgg(filePath, takeFirstInt, keyLength):
+    """This will distribute characters according to their convergence. At the moment it ignores all excessive characters."""
+    cipherStrings = getTAfileStringsList(filePath)
+    newFile = ""
+    for cipherString in cipherStrings:
+        if(takeFirstInt == 0):
+            cLength = len(cipherString)
+            greatestMultiple = math.floor(cLength / keyLength)
+            limit = int((keyLength*greatestMultiple))
+            newFile += cipherString[0:limit]
+        else:
+            newFile += cipherString[0:takeFirstInt]# Currently a naive version.
     return newFile
     
 def TAfriedmanAnalysis(filePath, maxKeySize, takeFirstInt):
@@ -392,19 +416,20 @@ def TAfriedmanAnalysis(filePath, maxKeySize, takeFirstInt):
     analysisFreidmanNorm(newFile, maxKeySize)
 
 def TAgetSpecificKey(filePath, keyLength, nrOfSolutions, takeFirstInt):
-    newFile = aggregateTAFiles(filePath, takeFirstInt)
+    newFile = smartTAAgg(filePath, takeFirstInt, keyLength)
     prettySolutionPrinter(showCandidateKey(newFile, keyLength, nrOfSolutions), "TA test")
     
 #Assumes files to aggregate are named text something.
 def aggregateTAFilescrack(filePath, maxKey, nrOfSolutions, takeFirstInt):
-    newFile = aggregateTAFiles(filePath, takeFirstInt)
-    print("sending: ", newFile)
+    #newFile = aggregateTAFiles(filePath, takeFirstInt)
+    #print("sending: ", newFile)
     print("lanIC", getLanugageIC())
     #analysisFreidmanNorm(newFile, 180)
     #prettySolutionPrinter(showCandidateKey(newFile, keyLength, nrOfSolutions), "Testrun")
     lanIC = getLanugageIC()
     niceKeys = []
     for keyLength in range(4,maxKey):
+        newFile = smartTAAgg(filePath, keyLength, takeFirstInt)
         temp = getICForKey(showCandidateKey(newFile, keyLength, nrOfSolutions))
         similarityToLang = (temp[1]/lanIC)-1
         if(similarityToLang < 0.1 and similarityToLang > -0.1):
